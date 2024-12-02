@@ -2206,8 +2206,8 @@ const version_t hw_version_text[MAX_VERSION_TEXT] =
  { 165, 179,    "V0.4.5.1",     1,      0},
  { 180, 195,    "V0.4.5.1.1",   2,      0},
  { 250, 350,    "V0.4.6",       3,      1},
- { 2030, 2050,  "V0.5.2",       102,    1},
- { 2051, 2500,  "V0.5.3.2",     103,    1},
+ { 2030, 2040,  "V0.5.2",       102,    1},
+ { 2240, 2260,  "V0.5.4",       103,    1},
 };
 
 uint16_t hwid = 0;
@@ -2867,8 +2867,8 @@ THD_FUNCTION(myshellThread, p)
   (void)p;
   chRegSetThreadName("shell");
   shell_printf(VNA_SHELL_NEWLINE_STR"tinySA Shell"VNA_SHELL_NEWLINE_STR);
+  shell_printf(VNA_SHELL_PROMPT_STR);
   while (true) {
-    shell_printf(VNA_SHELL_PROMPT_STR);
     if (VNAShell_readLine(shell_line, VNA_SHELL_MAX_LENGTH))
       VNAShell_executeLine(shell_line);
     else // Putting a delay in order to avoid an endless loop trying to read an unavailable stream.

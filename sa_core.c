@@ -7895,6 +7895,7 @@ void calibrate(void)
   //for (int j = 0; j < CALIBRATE_RBWS; j++) {
   //  set_RBW(power_rbw[j]);
 
+  in_calibration = true;
   setting.scale = 1;
   set_trace_scale(1);
   for (int i =0; i<HARMONIC_JUMP; i++) { // Don't do harmonic
@@ -7946,7 +7947,6 @@ void calibrate(void)
 #endif
 #endif
   reset_calibration();
-  in_calibration = true;
 #ifdef TINYSA4
   //int current_correction_calibration = 0;
 #endif
