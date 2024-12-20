@@ -656,6 +656,7 @@ show_version(void)
 // Version text for tinySA4
 #ifdef TINYSA4
   ili9341_drawstring_10x14(info_about[i++], x , y);
+  ili9341_drawstring_10x14(hw_text, x + 138 , y);
   y+=FONT_GET_HEIGHT*3+2-5;
   ili9341_drawstring_7x13(info_about[i++], x , y);
   while (info_about[i]) {

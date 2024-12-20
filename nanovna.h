@@ -161,6 +161,7 @@ typedef uint64_t freq_t;
 extern uint16_t hw_if;
 #define DEFAULT_SPUR_OFFSET ((freq_t)(actual_rbw_x10 > 3000 ? 1500000 : 1000000))
 #define STATIC_DEFAULT_SPUR_OFFSET ((freq_t) 1500000)
+extern char *hw_text;
 
 #define MAX_LOW_OUTPUT_FREQ ((freq_t)1130000000)
 #define HIGH_MIN_FREQ_MHZ   136// 825
