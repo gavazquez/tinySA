@@ -2242,9 +2242,9 @@ static void update_level_meter(void){
 //  if (area_width-minimum_text_width > 0)
 //    ili9341_fill(OFFSETX+minimum_text_width, graph_bottom+1, area_width-minimum_text_width, CHART_BOTTOM - graph_bottom);
   ili9341_set_foreground(LCD_FG_COLOR);
-  int x_max = area_width+OFFSETX;
+  int x_max = area_width+OFFSETX-1;
 #ifdef TINYSA4
-  int  BIG_SIZE = (auto_capture?2:4);
+  int  BIG_SIZE = (auto_capture?2:3);
 #else
 #define BIG_SIZE 2
 #endif
