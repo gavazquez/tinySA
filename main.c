@@ -1262,7 +1262,7 @@ const float  v5_2_correction_value[CORRECTION_SIZE][CORRECTION_POINTS]=
  /* out */   {   8.37,   5.53,   2.3,    -1.37,  -3.14,  -3.43,  -5.06,  -5.59,  -5.95,  -5.59,  -4.55,  -5.06,  -5.06,  -5.59,  -5.35,  -5.78,  -5.12,  -5.17,  -3.81,  -2.37},
  /* direct */    {   -3.9,   -2.73,  -2.55,  -2.5,   -1.04,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03,  -0.03},
  /* adf */   {   -3.25,  -2.51,  -1.77,  -1.34,  -0.16,  2.8,    5.37,   5.23,   3.76,   -0.93,  -1.98,  -4.71,  -5.41,  -7.41,  -8.63,  -8.53,  -8.28,  -7.66,  -7.56,  -5.78},
- /* ultra */ {   8.24,   4.14,   1.31,   -1.56,  -3.29,  -5.09,  -5.59,  -4.86,  -5.78,  -4.61,  -4.67,  -2.02,  -2.93,  -0.36,  2.78,   1.84,   4.97,   8.07,   11.98,  11.47},
+ /* ultra */ {   8.24,   4.14,   1.31,   -1.56,  -3.29,  -5.09,  -5.59,  -4.86,  -5.78,  -4.61,  -4.67,  -2.02,  -2.93,  -0.36,  2.78,   1.84,   4.97,   8.07,   10.8,   22.47},
 };
 
 const float v5_2_harmonic_lna_level_offset = 0; // should be in correction table now -7;        // Depends on where the transition to harmonic is done!!!!!! TODO find best frequency to transition to harmonic
@@ -2447,7 +2447,7 @@ static const VNAShellCommand commands[] =
 #ifdef ENABLE_COLOR_COMMAND
     {"color"       , cmd_color       , CMD_RUN_IN_LOAD},
 #endif
-    { "if", cmd_if,    CMD_WAIT_MUTEX | CMD_RUN_IN_LOAD },
+    { "if", cmd_if,    CMD_RUN_IN_LOAD },
 #ifdef TINYSA4
     { "if1", cmd_if1,    CMD_RUN_IN_LOAD },
     { "lna2", cmd_lna2,    CMD_RUN_IN_LOAD },

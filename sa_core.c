@@ -4901,7 +4901,7 @@ again:                                                              // Spur redu
         pureRSSI = Si446x_RSSI(break_on_operation);
         if (LO_shifting && (signal_path != PATH_DIRECT)) {
           if (f < 5000000)
-            pureRSSI += float_TO_PURE_RSSI(actual_rbw_x10>USE_SHIFT2_RBW ? config.shift2_level_offset : (lf < LOW_SHIFT_FREQ ? config.shift1_level_offset: 0.0));
+            pureRSSI -= float_TO_PURE_RSSI(actual_rbw_x10 == USE_SHIFT2_RBW ? config.shift2_level_offset : (actual_rbw_x10 == USE_SHIFT1_RBW ? config.shift1_level_offset : 0));
           else
             pureRSSI += float_TO_PURE_RSSI(config.shift_level_offset);
         }
@@ -6689,8 +6689,8 @@ float measure_jump(int i) {
     right += actual_t[j];
   }
   right /= h_p;
-  if (i <= 1)              // for 2MHz jump
-    return(right-left); // returns level jump low to high frequency.
+//  if (i <= 1)              // for 2MHz jump
+//    return(right-left); // returns level jump low to high frequency.
   return (left - right);
 }
 #endif
@@ -7916,8 +7916,10 @@ void calibrate(void)
 //        setting.spur_removal = S_OFF;
 //        set_reflevel(-95);
     } else if (i <= 1) {
-      if (i == 1)
-        set_RBW(8500);
+      if (i == 0)
+        set_RBW(USE_SHIFT1_RBW);
+      else
+        set_RBW(USE_SHIFT2_RBW);
       set_refer_output(5);          // 2MHz
       setting.spur_removal = S_OFF;
     } else {

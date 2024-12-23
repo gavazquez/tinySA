@@ -177,7 +177,8 @@ extern char *hw_text;
 #define DRIVE2_MAX_FREQ     2100000000ULL           // LO drive 2
 #define LOW_SHIFT_FREQ      2000000ULL              // shift IF to avoid zero Hz within IF
 
-#define USE_SHIFT2_RBW  4000        // use shift2_level_offset if actual_rbw_x10 is larger then this.
+#define USE_SHIFT2_RBW  8500        // shift2_level_offset rbw
+#define USE_SHIFT1_RBW  6000        // shift1_level_offset rbw
 #ifdef __NEW_SWITCHES__
 #define DIRECT_START config.direct_start
 #define DIRECT_STOP  config.direct_stop
