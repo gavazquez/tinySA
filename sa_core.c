@@ -6676,6 +6676,7 @@ int validate_level(int i) {
 
 #ifdef TINYSA4
 float measure_jump(int i) {
+  (void) i;
   redraw_request |= REDRAW_AREA | REDRAW_CAL_STATUS;
   draw_all(TRUE);
   float left=0,
