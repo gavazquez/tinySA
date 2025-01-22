@@ -159,7 +159,7 @@ typedef uint64_t freq_t;
 #define DEFAULT_IF  ((freq_t)977400000)
 #define DEFAULT_IF_PLUS  ((freq_t)1070100000)
 extern uint16_t hw_if;
-#define DEFAULT_SPUR_OFFSET ((freq_t)(actual_rbw_x10 > 3000 ? 1500000 : 1000000))
+#define DEFAULT_SPUR_OFFSET ((freq_t)(actual_rbw_x10 >= 3000 ? 1500000 : 1000000))
 #define STATIC_DEFAULT_SPUR_OFFSET ((freq_t) 1500000)
 extern char *hw_text;
 
@@ -314,6 +314,7 @@ void resume_once(uint16_t c);
 #ifdef TINYSA4
 void set_deviation(int d);
 void set_depth(int d);
+void set_avoid(int s);
 extern int LO_harmonic;
 #endif
 void toggle_mute(void);

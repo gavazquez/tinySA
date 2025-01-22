@@ -2469,6 +2469,7 @@ static const VNAShellCommand commands[] =
     { "spur", cmd_spur,    CMD_WAIT_MUTEX | CMD_RUN_IN_LOAD },
 #endif
 #ifdef TINYSA4
+    { "avoid", cmd_avoid,    CMD_WAIT_MUTEX | CMD_RUN_IN_LOAD },
     { "lna", cmd_lna,    CMD_WAIT_MUTEX | CMD_RUN_IN_LOAD },
     { "direct", cmd_direct, CMD_WAIT_MUTEX | CMD_RUN_IN_LOAD },
 #endif
@@ -3306,6 +3307,9 @@ int main(void)
   #endif
 
   chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO-1, Thread1, NULL);
+
+
+ // toggle_debug_avoid();
 
   while (1) {
 //    if (SDU1.config->usbp->state == USB_ACTIVE) {

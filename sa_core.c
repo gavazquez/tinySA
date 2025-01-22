@@ -2189,7 +2189,7 @@ void calculate_step_delay(void)
 #ifdef __SI4463__
       SI4432_step_delay   = step_delay_table[i].step_delay;
       SI4432_offset_delay = step_delay_table[i].offset_delay;
-      spur_gate           = actual_rbw_x10 * (actual_rbw_x10 > 5000 ? (100/2) : 100);
+      spur_gate           = actual_rbw_x10 * (actual_rbw_x10 > 7000 ? (40) : (actual_rbw_x10 > 5000 ? (60) : (actual_rbw_x10 > 2000 ? (90) : 100)));
       if (spur_gate < 15000)
         spur_gate = 15000;
 //      spur_gate           = step_delay_table[i].spur_div_1000 * 1000;
@@ -3147,9 +3147,10 @@ static  const freq_t static_spur_table_plus[] =     // Valid for IF=977.4MHz
 #define STATIC_SPUR_TABLE_SIZE_PLUS sizeof(static_spur_table_plus)/8
 
 #define MAX_DYNAMIC_SPUR_TABLE_SIZE 100
-static  freq_t dynamic_spur_table[MAX_DYNAMIC_SPUR_TABLE_SIZE];       // Frequencies to be calculated
-static int dynamic_spur_table_size = 0;
+freq_t dynamic_spur_table[MAX_DYNAMIC_SPUR_TABLE_SIZE];       // Frequencies to be calculated
+int dynamic_spur_table_size = 0;
 freq_t dynamic_spur_IF = 0;
+int dynamic_spur_rbw = 0;
 static int always_use_dynamic_table = false;
 
 static  freq_t *spur_table = (freq_t *)static_spur_table;
@@ -3236,10 +3237,15 @@ int binary_search_table(freq_t f, const freq_t *table, int table_size, int gate)
 
 #define RBW_FOR_STATIC_TABLE    1100
 
-#define SPUR_FACTOR 937746
 void fill_spur_table(void)
 {
   freq_t corr_IF;
+  uint32_t spur_factor;
+//  if (hw_if)
+//    spur_factor = setting.frequency_IF; // DEFAULT_IF_PLUS;
+//  else
+    spur_factor = 937746;
+
 
   if (always_use_dynamic_table) {       // Only after doing selftest 1
     spur_table = dynamic_spur_table;
@@ -3262,28 +3268,33 @@ void fill_spur_table(void)
     return;
   }
   corr_IF = setting.frequency_IF;
-  if (dynamic_spur_IF == corr_IF)
+  if (dynamic_spur_IF == corr_IF && dynamic_spur_rbw == actual_rbw_x10)
     return;
   dynamic_spur_IF = corr_IF;
+  dynamic_spur_rbw = actual_rbw_x10;
   dynamic_spur_table_size = 0;
 //  dynamic_spur_table[dynamic_spur_table_size++] = 132000000;
 //  dynamic_spur_table[dynamic_spur_table_size++] = 153000000;
 //  dynamic_spur_table[dynamic_spur_table_size++] = 174600000;
 //  dynamic_spur_table[dynamic_spur_table_size++] = 219000000;
-  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 -SPUR_FACTOR/2;
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 -spur_factor/2;
   if (!hw_if)
-    dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 -SPUR_FACTOR/2 + 60000;
+    dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 -spur_factor/2 + 60000;
   else
     dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 - 400000;
-  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/3 -SPUR_FACTOR/3;
-  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -SPUR_FACTOR;
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/3 -spur_factor/3;
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -spur_factor - 40000;
   if (actual_rbw_x10 < 3000) {
-      if (!hw_if)
-        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -SPUR_FACTOR + 120000;
-      else
-        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 - 800000;
+        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -spur_factor + 10000;
   }
-  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF*2/3 -SPUR_FACTOR*2/3;
+//  if (actual_rbw_x10 < 1000 && hw_if) {
+//        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 - spur_factor + 120000;
+//        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 - spur_factor + 170000;
+//  }
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF*2/3 -spur_factor*2/3;
+  if (actual_rbw_x10 < 6000 && hw_if) {
+        dynamic_spur_table[dynamic_spur_table_size++] = corr_IF*2/3 -spur_factor*2/3 + 160000;
+  }
   spur_table = dynamic_spur_table;
   spur_table_size = dynamic_spur_table_size;
 #if 0
@@ -3328,6 +3339,15 @@ void fill_spur_table(void)
 
 enum {F_NOSPUR = 0, F_NEAR_SPUR = 1, F_AT_SPUR = 2};
 
+#ifdef TINYSA4
+int avoid_setting = 0;
+enum {avoid_auto, avoid_off, avoid_on};
+
+void set_avoid(int s) {
+  avoid_setting = s;
+}
+#endif
+
 int avoid_spur(freq_t f)                   // find if this frequency should be avoided
 {
   if (in_selftest)
@@ -3338,6 +3358,10 @@ int avoid_spur(freq_t f)                   // find if this frequency should be a
 #ifdef TINYSA4
   if (setting.mode != M_LOW /* || !setting.auto_IF */)
     return(F_NOSPUR);
+  if (avoid_setting == avoid_off)
+    return F_NOSPUR;
+  if (avoid_setting == avoid_on)
+    return F_AT_SPUR;
 #else
   if (setting.mode != M_LOW || !setting.auto_IF || actual_rbw_x10 > 3000)
     return(F_NOSPUR);
@@ -4036,7 +4060,7 @@ modulation_again:
 	stored_t[i] = -90.0;                                  // Display when to do spur shift in the stored trace
   }
   int local_vbw_steps = vbwSteps;
-  freq_t local_IF;
+  volatile freq_t local_IF;
 #ifdef TINYSA4
   local_IF = config.frequency_IF1;
 #if 0
@@ -4208,7 +4232,7 @@ again:                                                              // Spur redu
                   local_IF = local_IF;
                 } else
                 if (setting.auto_IF) {
-                  local_IF = local_IF + (actual_rbw_x10 > 2000  || hw_if ? DEFAULT_SPUR_OFFSET : DEFAULT_SPUR_OFFSET/2); // TODO find better way to shift spur away at large RBW/2;
+                  local_IF = local_IF + (actual_rbw_x10 > 2000 ? DEFAULT_SPUR_OFFSET : DEFAULT_SPUR_OFFSET/2); // TODO find better way to shift spur away at large RBW/2;
                   //                if (actual_rbw_x10 == 6000 )
                   //                  local_IF = local_IF + 50000;
                   LO_spur_shifted = true;
@@ -4241,8 +4265,8 @@ again:                                                              // Spur redu
                   setting.below_IF= S_AUTO_OFF;
                 }
               }
-              else if (hw_if && actual_rbw_x10 < 8500)
-                local_IF += 250000;
+//              else if (hw_if && actual_rbw_x10 < 6000)
+//                local_IF += 250000;
 
 #else
               local_IF = local_IF; // + DEFAULT_SPUR_OFFSET/2;                  // No spure removal and no spur, center in IF
@@ -4507,7 +4531,7 @@ again:                                                              // Spur redu
         }
 
 #if 1                                                               // Compensate frequency ADF4350 error with SI4468
-        if (actual_rbw_x10 < 10000 || setting.frequency_step < 100000) { //TODO always compensate for the moment as this eliminates artifacts at larger RBW
+        if (actual_rbw_x10 < 3000 || setting.frequency_step < 100000) { //TODO always compensate for the moment as this eliminates artifacts at larger RBW
         int32_t error_f = 0;
         if (real_old_freq[ADF4351_LO] > target_f) {
           error_f = real_old_freq[ADF4351_LO] - target_f;

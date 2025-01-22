@@ -193,6 +193,24 @@ VNA_SHELL_FUNCTION(cmd_lna)
     redraw_request |= REDRAW_CAL_STATUS | REDRAW_AREA;
   }
 }
+
+VNA_SHELL_FUNCTION(cmd_avoid)
+{
+  extern freq_t dynamic_spur_table[];       // Frequencies to be calculated
+  extern int dynamic_spur_table_size;
+  int m = generic_option_cmd("avoid", "auto|off|on|dump", argc, argv[0]);
+  if (m == 3) {
+    for (int i=0; i < dynamic_spur_table_size; i++)
+      shell_printf("%D\n",dynamic_spur_table[i]);
+  }
+  else if (m>=0) {
+    set_avoid(m);
+    if (m == 0)
+      toggle_debug_avoid();
+    redraw_request |= REDRAW_CAL_STATUS | REDRAW_AREA;
+  }
+}
+
 #endif
 #ifdef __ULTRA__
 VNA_SHELL_FUNCTION(cmd_ultra)
