@@ -3295,6 +3295,7 @@ void fill_spur_table(void)
   if (actual_rbw_x10 < 6000 && hw_if) {
         dynamic_spur_table[dynamic_spur_table_size++] = corr_IF*2/3 -spur_factor*2/3 + 160000;
   }
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF*3/2 -spur_factor*3/2;
   spur_table = dynamic_spur_table;
   spur_table_size = dynamic_spur_table_size;
 #if 0
@@ -4356,7 +4357,7 @@ again:                                                              // Spur redu
 #define TCXO    30000000
 #define TXCO_DIV3   10000000
 
-#define AVOID_MULTI 150
+#define AVOID_MULTI 200
 
 #ifdef __SI5351__
         if (si5351_available) {
@@ -4421,23 +4422,17 @@ again:                                                              // Spur redu
             }
             freq_t tf = ((lf + actual_rbw_x10*AVOID_MULTI) / TCXO) * TCXO;
             if (tf + actual_rbw_x10*AVOID_MULTI >= lf  && tf < lf + actual_rbw_x10*AVOID_MULTI /* && tf != 180000000 */ ) {   // 30MHz
-              if (max2871) {
-                if (lf > 59000000) {
-//                  if (tf == 180000000) {
-//                    ADF4351_R_counter(7);
-//                  } else
-                  ADF4351_R_counter(8);
-                }
-              } else {
                 if ( (tf / TCXO) & 1 ) {    // Odd harmonic of 30MHz
-                  ADF4351_R_counter(-3);
+                  if (max2871)
+                    ADF4351_R_counter(4);
+                  else
+                    ADF4351_R_counter(-3);
                 } else {
                   if (hw_if)
                     ADF4351_R_counter(4);
                   else
                     ADF4351_R_counter(4);
                 }
-              }
             }
 #if 0
             else if (actual_rbw_x10 < 1000) {
@@ -4448,14 +4443,18 @@ again:                                                              // Spur redu
                 ADF4351_R_counter(3);
             }
 #endif
-            else if (get_sweep_frequency(ST_SPAN)<5000000) { // When scanning less then 5MHz
+            else if (get_sweep_frequency(ST_SPAN)<50000000 || max2871) { // When scanning less then 50MHz
               if (actual_rbw_x10 <= 3000) {
-                freq_t tf = ((lf + actual_rbw_x10*1000) / TXCO_DIV3) * TXCO_DIV3;
-                if (tf + actual_rbw_x10*1000 >= lf  && tf < lf + actual_rbw_x10*1000) // 10MHz
-                  ADF4351_R_counter(-4);    // To avoid PLL Loop shoulders at multiple of 10MHz
+                freq_t shift = (max2871 ? 700000 : 0);
+                freq_t tf= ((lf - shift + actual_rbw_x10*1000) / TXCO_DIV3) * TXCO_DIV3;
+                if (tf + shift + actual_rbw_x10*1000 >= lf  && tf + shift < lf + actual_rbw_x10*1000) // 10MHz
+                  if (max2871)
+                    ADF4351_R_counter(3);    // To avoid PLL Loop shoulders at multiple of 10MHz
+                  else
+                    ADF4351_R_counter(-4);    // To avoid PLL Loop shoulders at multiple of 10MHz
                 else {
                   if (hw_if)
-                    ADF4351_R_counter(1);
+                    ADF4351_R_counter(3);
                   else
                     ADF4351_R_counter(3);     // To avoid PLL Loop shoulders
                 }
