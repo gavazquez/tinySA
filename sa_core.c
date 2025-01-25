@@ -3284,6 +3284,7 @@ void fill_spur_table(void)
     dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/4 - 400000;
   dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/3 -spur_factor/3;
   dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -spur_factor - 40000;
+  dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -spur_factor - 20000;
   if (actual_rbw_x10 < 3000) {
         dynamic_spur_table[dynamic_spur_table_size++] = corr_IF/2 -spur_factor + 10000;
   }
