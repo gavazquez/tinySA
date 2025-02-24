@@ -880,6 +880,7 @@ typedef struct config {
 #endif
 #ifdef TINYSA4
   uint8_t hide_21MHz;
+  uint8_t no_audio_agc;
 #endif
   float sweep_voltage;
   float switch_offset;

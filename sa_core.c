@@ -4446,11 +4446,11 @@ again:                                                              // Spur redu
 #endif
             else if (get_sweep_frequency(ST_SPAN)<50000000 || max2871) { // When scanning less then 50MHz
               if (actual_rbw_x10 <= 3000) {
-                freq_t shift = (max2871 ? 700000 : 0);
+                freq_t shift = (max2871 ? 0 : 0);
                 freq_t tf= ((lf - shift + actual_rbw_x10*1000) / TXCO_DIV3) * TXCO_DIV3;
                 if (tf + shift + actual_rbw_x10*1000 >= lf  && tf + shift < lf + actual_rbw_x10*1000) // 10MHz
                   if (max2871)
-                    ADF4351_R_counter(3);    // To avoid PLL Loop shoulders at multiple of 10MHz
+                    ADF4351_R_counter(1);
                   else
                     ADF4351_R_counter(-4);    // To avoid PLL Loop shoulders at multiple of 10MHz
                 else {
