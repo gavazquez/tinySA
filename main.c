@@ -95,7 +95,7 @@ const char * const info_about[]={
   BOARD_NAME,
   "2019-2024 Copyright @Erik Kaashoek",
   "2016-2020 Copyright @edy555",
-  "SW licensed under GPL. See: https://github.com/erikkaashoek/tinySA",
+  "SW licensed under GPL. See: " REPO_URL,
   "Version: " VERSION,
   "Build Time: " __DATE__ " - " __TIME__,
   "Kernel: " CH_KERNEL_VERSION,
@@ -3000,6 +3000,54 @@ void set_freq_boundaries(void) {
 }
 #endif
 
+
+#ifdef SA5_ULTRA
+#define ENC_TIMER GPTD6
+
+void enc_timer_callback(GPTDriver *gptp)
+{
+  (void)gptp;
+
+  button_encoder_scan();
+}
+
+// Encoder timer check (check press frequency 500Hz)
+static const GPTConfig enc_gptcfg = {
+    1000000,  // Timer Clock: 1MHz
+    enc_timer_callback,  // Timer callback
+    0,
+    0
+};
+
+#endif
+
+#if 0
+static THD_WORKING_AREA(waREncoderThread, 64);
+static THD_FUNCTION(REncoderThread, arg)
+{
+  (void)arg;
+  chRegSetThreadName("REncoder");
+
+  //shell_printf("REncoderThread start..." VNA_SHELL_NEWLINE_STR);
+
+  while (true) {
+    // uint8_t dir_state = MD_REncoder_read();
+    // // shell_printf("%08d: %02X" VNA_SHELL_NEWLINE_STR, chVTGetSystemTimeX(), dir_state);
+    // if (dir_state) {
+    //   shell_printf("%02X" VNA_SHELL_NEWLINE_STR, dir_state);
+    // }
+
+    // REncoder_scan();
+    button_encoder_scan();
+
+    // 20step: 1ms 2ms
+    // 30step: 5ms
+    chThdSleepMilliseconds(2);
+  }
+}
+
+#endif
+
 int main(void)
 {
   halInit();
@@ -3128,6 +3176,9 @@ int main(void)
   if (has_new_switch)
     config.switch_offset = -5.0;
 #endif
+#ifdef SA5_ULTRA
+  int reset_state = 0;  // load config from flash
+#else
   int reset_state = btn_side();
 #ifdef TINYSA4
   if (hw_if) {
@@ -3307,6 +3358,13 @@ int main(void)
   #endif
 
   chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO-1, Thread1, NULL);
+
+#ifdef SA5_ULTRA
+  // chThdCreateStatic(waREncoderThread, sizeof(waREncoderThread), HIGHPRIO,
+  // REncoderThread, NULL);
+  gptStart(&ENC_TIMER, &enc_gptcfg);
+  gptStartContinuous(&ENC_TIMER, 2000);  // period = 1MHz / 2000 = 500Hz = 2ms
+#endif
 
 
  // toggle_debug_avoid();
