@@ -3180,6 +3180,7 @@ int main(void)
   int reset_state = 0;  // load config from flash
 #else
   int reset_state = btn_side();
+#endif
 #ifdef TINYSA4
   if (hw_if) {
     ULTRA_THRESHOLD = 800000000ULL;
